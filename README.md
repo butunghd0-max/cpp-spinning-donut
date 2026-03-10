@@ -27,6 +27,7 @@ This version adds **ANSI 256-color gradients**, **flicker-free single-write rend
   - [Step 12: Rendering the Frame](#step-12-rendering-the-frame)
 - [Constants & Parameters](#constants--parameters)
 - [Build & Run](#build--run)
+- [Connections to IB Math AA HL](#connections-to-ib-math-aa-hl)
 - [References & Sources](#references--sources)
 
 ---
@@ -527,6 +528,52 @@ g++ -O2 main.cpp -o donut.exe
 Press **Ctrl+C** to stop.
 
 > **Note:** The old `cmd.exe` on Windows does not support ANSI escape codes. Use **Windows Terminal** or the **VS Code integrated terminal** instead.
+
+---
+
+## Connections to IB Math AA HL
+
+This project is essentially a single-file application of almost half the IB Mathematics: Analysis and Approaches HL syllabus, specifically Topic 3 (Geometry & Trigonometry). Here is every concept used in the donut renderer mapped to its corresponding syllabus topic.
+
+### Topic 3: Geometry and Trigonometry
+
+| Syllabus Topic                           | Concept                                                                      | Where it appears in the donut                                                                                                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **3.1** 3D Geometry                      | Distance, coordinates, and angles in three-dimensional space                 | Every point on the torus is a 3D coordinate `(x, y, z)`. The entire renderer works in 3D space before projecting to 2D.                                                  |
+| **3.2** Sine, cosine, and tangent ratios | Trigonometric ratios for determining sides and angles                        | `sin()` and `cos()` are called for every angle (`theta`, `phi`, `A`, `B`) to compute point positions and normals.                                                        |
+| **3.4** The unit circle                  | Definitions of `sin` and `cos` for all angles, radian measure                | The torus cross-section is literally a unit circle (`R1 = 1`). All angles are in radians (`0` to `6.28`).                                                                |
+| **3.5** Pythagorean identity             | `sin²(t) + cos²(t) = 1`                                                      | Implicitly relied on throughout. The surface normals are unit vectors because the Pythagorean identity guarantees that `(cos theta, sin theta)` lies on the unit circle. |
+| **3.6** Circular functions               | Graphs and behavior of `sin(x)` and `cos(x)`, periodicity                    | The two nested loops sweep `theta` and `phi` through a full period (`0` to `2pi`), generating the periodic surface of the torus.                                         |
+| **3.7** Composite trig functions         | Combining trigonometric expressions                                          | The rotation matrix expansion produces compound expressions like `cosB * cosPhi + sinA * sinB * sinPhi`, which are compositions of multiple trig evaluations.            |
+| **3.12** Vectors                         | Position vectors, components, magnitude, unit vectors, scalar multiplication | Every 3D point is a position vector `(x, y, z)`. Surface normals are unit vectors. The light direction `(0, 1, -1)` is a vector.                                         |
+| **3.13** Scalar (dot) product            | Finding angles between vectors, identifying perpendicular/parallel vectors   | The luminance calculation is a dot product between the surface normal vector and the light direction vector. The result determines how much light hits each point.       |
+
+### Topic 3 HL: Rotation Matrices
+
+The IB AA HL syllabus covers **2D rotation matrices** as part of affine transformations. This project extends that concept to **3D rotation matrices**, which follow the exact same principles:
+
+The 2D rotation matrix you learn in AA HL:
+
+```
+| cos(t)  -sin(t) |
+| sin(t)   cos(t) |
+```
+
+The 3D rotation matrices used in this code are built from the same idea, just applied to one axis at a time (the extra row/column is an identity for the axis that stays fixed). If you understand the 2D case from class, the 3D case is a direct extension.
+
+### Other Relevant Topics
+
+| Syllabus Topic                     | Concept                      | Where it appears in the donut                                                                                                                                                                    |
+| ---------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1.1** Number patterns            | Arithmetic sequences, series | The angles `theta` and `phi` are incremented by fixed step sizes (`THETA_STEP`, `PHI_STEP`), forming arithmetic sequences that uniformly sample the torus surface.                               |
+| **2.5** Composite functions        | `f(g(x))`                    | The rendering pipeline is a chain of composed functions: parametric circle, revolution (rotation by `phi`), rotation by `A`, rotation by `B`, perspective projection, and luminance calculation. |
+| **2.10** Parametric equations (HL) | Curves defined by parameter  | The torus is defined parametrically by two parameters (`theta`, `phi`). Each pair maps to a unique `(x, y, z)` point on the surface.                                                             |
+
+### Why this matters
+
+If you are studying AA HL and found the trig/vectors unit abstract, this project is a concrete demonstration of what those tools can actually do. The unit circle is not just a diagram in your textbook; it is the literal building block of a 3D shape. The dot product is not just a formula on a test; it is how every 3D engine in the world computes lighting. And rotation matrices are not just exam content; they are used in robotics, computer graphics, aerospace, and physics simulations.
+
+This is one of those rare projects where nearly every concept from Topic 3 shows up in a single, self-contained program.
 
 ---
 
