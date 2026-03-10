@@ -1,8 +1,8 @@
-# 🍩 Spinning Donut in C++
+# Spinning Donut in C++
 
-A 3D spinning donut (torus) rendered entirely in the terminal using ASCII characters and ANSI color codes. No graphics libraries, no GPU, no external dependencies — just raw math, trigonometry, and `stdout`.
+A 3D spinning donut (torus) rendered entirely in the terminal using ASCII characters and ANSI color codes. No graphics libraries, no GPU, no external dependencies. Just raw math, trigonometry, and `stdout`.
 
-This project is heavily inspired by [**Andy Sloane's original `donut.c`**](https://www.a1k0n.net/2011/07/20/donut-math.html) (2006/2011) and the viral [**"Donut-shaped C code that generates a 3D spinning donut"**](https://www.youtube.com/watch?v=DEqXNfs_HhY) phenomenon. I first discovered this through the [**Joma Tech video**](https://www.youtube.com/watch?v=74FJ8TTMM5E) and thought it was one of the hardest, most mind-bending things I'd ever seen — so I had to try it myself.
+This project is heavily inspired by [**Andy Sloane's original `donut.c`**](https://www.a1k0n.net/2011/07/20/donut-math.html) (2006/2011) and the viral "Donut-shaped C code that generates a 3D spinning donut" phenomenon. I first discovered this through the [**Joma Tech video**](https://www.youtube.com/watch?v=sW9npZVpiMI) and thought it was one of the hardest, most mind-bending things I'd ever seen, so I had to try it myself.
 
 This version adds **ANSI 256-color gradients**, **flicker-free single-write rendering**, and **delta-time rotation** on top of the original concept.
 
@@ -11,10 +11,10 @@ This version adds **ANSI 256-color gradients**, **flicker-free single-write rend
 ## Table of Contents
 
 - [Demo](#demo)
-- [How It Works — The Math](#how-it-works--the-math)
+- [How It Works - The Math](#how-it-works---the-math)
   - [1. Building the Torus](#1-building-the-torus)
   - [2. Spinning It (3D Rotation Matrices)](#2-spinning-it-3d-rotation-matrices)
-  - [3. Perspective Projection (3D → 2D)](#3-perspective-projection-3d--2d)
+  - [3. Perspective Projection (3D to 2D)](#3-perspective-projection-3d-to-2d)
   - [4. Z-Buffering](#4-z-buffering)
   - [5. Illumination & ASCII Shading](#5-illumination--ascii-shading)
   - [6. ANSI Color Gradient](#6-ansi-color-gradient)
@@ -52,20 +52,20 @@ This version adds **ANSI 256-color gradients**, **flicker-free single-write rend
                  .::;;;;;;!!;;::~
 ```
 
-> The actual output is rendered with a navy → teal → cyan → white ANSI color gradient in your terminal.
+> The actual output is rendered with a navy-to-teal-to-cyan-to-white ANSI color gradient in your terminal.
 
 ---
 
-## How It Works — The Math
+## How It Works - The Math
 
-This is genuinely one of the most mathematically dense small programs you'll encounter. Every single frame, it computes thousands of 3D points, rotates them in space, projects them onto a flat screen, and calculates lighting — all with nothing but `sin()`, `cos()`, and basic arithmetic.
+This is genuinely one of the most mathematically dense small programs you'll encounter. Every single frame, it computes thousands of 3D points, rotates them in space, projects them onto a flat screen, and calculates lighting, all with nothing but `sin()`, `cos()`, and basic arithmetic.
 
 ### 1. Building the Torus
 
 A donut is mathematically called a **torus**. You construct one by taking a small circle of radius `R1` and sweeping it around a larger circle of radius `R2`:
 
-- **θ (theta)** sweeps around the small cross-section circle (0 → 2π)
-- **φ (phi)** sweeps that circle around the central axis (0 → 2π)
+- **θ (theta)** sweeps around the small cross-section circle (0 to 2pi)
+- **φ (phi)** sweeps that circle around the central axis (0 to 2pi)
 
 The parametric equations for a point on the torus surface:
 
@@ -97,11 +97,11 @@ Rz(B) =  ⎢ sin B   cos B   0 ⎥
          ⎣   0       0     1 ⎦
 ```
 
-Rather than doing full matrix multiplications at runtime, the code pre-computes `sinA`, `cosA`, `sinB`, `cosB` and multiplies them out algebraically for each point — saving a ton of operations per frame.
+Rather than doing full matrix multiplications at runtime, the code pre-computes `sinA`, `cosA`, `sinB`, `cosB` and multiplies them out algebraically for each point, saving a ton of operations per frame.
 
-### 3. Perspective Projection (3D → 2D)
+### 3. Perspective Projection (3D to 2D)
 
-The terminal screen is flat, so we need to project 3D points onto 2D. This uses **perspective division** — objects further away appear smaller:
+The terminal screen is flat, so we need to project 3D points onto 2D. This uses **perspective division**, where objects further away appear smaller:
 
 ```
 x' = (K1 · x) / (z + K2)
@@ -127,10 +127,10 @@ If yes, it overwrites the pixel. If no, it's hidden behind something already dra
 
 ### 5. Illumination & ASCII Shading
 
-To simulate lighting, the code computes a **surface normal** for each point on the torus (the direction perpendicular to the surface). It then takes the **dot product** of the normal with a fixed light direction — this gives the cosine of the angle between them:
+To simulate lighting, the code computes a **surface normal** for each point on the torus (the direction perpendicular to the surface). It then takes the **dot product** of the normal with a fixed light direction, which gives the cosine of the angle between them:
 
-- **Dot product > 0** → surface faces the light → bright
-- **Dot product ≤ 0** → surface faces away → dark / not drawn
+- **Dot product > 0**: surface faces the light, so it is bright
+- **Dot product <= 0**: surface faces away, so it is dark / not drawn
 
 The resulting luminance value `N` indexes into an ASCII brightness ramp:
 
@@ -165,16 +165,16 @@ The entire frame is built into a single `std::string` and flushed to `stdout` in
 
 ## Constants & Parameters
 
-| Constant     | Value                | Purpose                                                                  |
-| ------------ | -------------------- | ------------------------------------------------------------------------ |
-| `R1`         | `1.0`                | Tube (cross-section) radius                                              |
-| `R2`         | `2.0`                | Distance from origin to the center of the tube                           |
-| `K2`         | `5.0`                | Distance from the viewer to the donut                                    |
-| `K1`         | `(H-4)·K2 / (R1+R2)` | Projection scale — derived from terminal height so the donut always fits |
-| `THETA_STEP` | `0.04`               | Angular resolution for the cross-section                                 |
-| `PHI_STEP`   | `0.02`               | Angular resolution for the sweep around the axis                         |
-| `WIDTH`      | `80`                 | Terminal columns                                                         |
-| `HEIGHT`     | `24`                 | Terminal rows                                                            |
+| Constant     | Value                | Purpose                                                                 |
+| ------------ | -------------------- | ----------------------------------------------------------------------- |
+| `R1`         | `1.0`                | Tube (cross-section) radius                                             |
+| `R2`         | `2.0`                | Distance from origin to the center of the tube                          |
+| `K2`         | `5.0`                | Distance from the viewer to the donut                                   |
+| `K1`         | `(H-4)·K2 / (R1+R2)` | Projection scale, derived from terminal height so the donut always fits |
+| `THETA_STEP` | `0.04`               | Angular resolution for the cross-section                                |
+| `PHI_STEP`   | `0.02`               | Angular resolution for the sweep around the axis                        |
+| `WIDTH`      | `80`                 | Terminal columns                                                        |
+| `HEIGHT`     | `24`                 | Terminal rows                                                           |
 
 ---
 
@@ -206,7 +206,7 @@ Press **Ctrl+C** to stop.
 
 - Sloane, Andy. "Optimizing Donut." _a1k0n.net_, 13 Jan. 2021, [www.a1k0n.net/2021/01/13/optimizing-donut.html](https://www.a1k0n.net/2021/01/13/optimizing-donut.html). Follow-up article with performance optimizations.
 
-- Green Code. "I Coded a 3D Spinning Donut." _YouTube_, uploaded by Green Code, [www.youtube.com/watch?v=74FJ8TTMM5E](https://www.youtube.com/watch?v=74FJ8TTMM5E). The video that inspired this project.
+- Joma Tech. "The Most Satisfying Video in the World (Coding)." _YouTube_, uploaded by Joma Tech, [www.youtube.com/watch?v=sW9npZVpiMI](https://www.youtube.com/watch?v=sW9npZVpiMI). The video that inspired this project.
 
 - "Torus." _Wikipedia_, Wikimedia Foundation, [en.wikipedia.org/wiki/Torus](https://en.wikipedia.org/wiki/Torus). Mathematical definition and parametric equations for the torus.
 
