@@ -33,6 +33,11 @@ This version adds **ANSI 256-color gradients**, **flicker-free single-write rend
 
 ## Demo
 
+![Spinning donut rendered in the terminal with ANSI color gradient](demo.gif)
+
+<details>
+<summary>ASCII text preview (for terminals without color support)</summary>
+
 ```
                  .::;;;;;;!!*****!!;;::~
              ,:;=!**##$$@@@@@@@@$$##**!=;:,
@@ -59,7 +64,7 @@ This version adds **ANSI 256-color gradients**, **flicker-free single-write rend
                  .::;;;;;;!!;;::~
 ```
 
-> The actual output is rendered with a navy-to-teal-to-cyan-to-white ANSI color gradient in your terminal.
+</details>
 
 ---
 
